@@ -1,4 +1,4 @@
-package com.example.zeeshanassignmentpaypay
+package com.example.zeeshanassignmentpaypay.ui
 
 import android.R
 import android.os.Bundle
@@ -11,12 +11,16 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.zeeshanassignmentpaypay.adapter.CurrencyRatesAdapter
 import com.example.zeeshanassignmentpaypay.data.model.Currency
 import com.example.zeeshanassignmentpaypay.databinding.ActivityMain2Binding
 import com.example.zeeshanassignmentpaypay.utils.Status
 import com.example.zeeshanassignmentpaypay.viewmodel.MainViewModel
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
@@ -27,7 +31,7 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     var completeCurrencyList = mutableListOf<Currency>()
     var currencyNamesList = mutableListOf<String>()
     var currencyPriceList = mutableListOf<Double>()
-    var selectedCurrency = Currency()
+    var selectedCurrency = Currency("",0.0,0)
 
     lateinit var spinnerArrayAdapter: ArrayAdapter<String>
 
@@ -50,8 +54,6 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             )
         )
         binding.currencyRecyclerView.adapter = adapter
-
-
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -107,28 +109,28 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
         mainViewModel.exchangeRates.observe(this, Observer {
             Log.e("currencyList_status", it.status.toString())
-
             when (it.status) {
                 Status.SUCCESS -> {
-                    binding.progressBar.visibility = View.GONE
-                    binding.currencyRecyclerView.visibility = View.VISIBLE
+                    CoroutineScope(Dispatchers.Main).launch() {
+                        binding.progressBar.visibility = View.GONE
+                        binding.currencyRecyclerView.visibility = View.VISIBLE
 
+                        var currencyList = mutableListOf<Currency>()
+                        currencyNamesList.clear()
+                        var exchangeRates = it.data
+                        var obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
+                        for ((key, value) in obj.entrySet()) {
+                            currencyList.add(Currency(key, value.asDouble))
+                            currencyNamesList.add(key)
+                            println("Key = $key Value = $value")
+                        }
 
-                    ///
-                    var currencyList = mutableListOf<Currency>()
-                    currencyNamesList.clear()
-                    var exchangeRates = it.data
-                    var obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
-                    for ((key, value) in obj.entrySet()) {
-                        currencyList.add(Currency(key, value.asDouble))
-                        currencyNamesList.add(key)
-                        println("Key = $key Value = $value")
+                        binding.spinner.adapter = spinnerArrayAdapter
+                        completeCurrencyList = currencyList;
+                        renderCurrencyList(completeCurrencyList)
+                        mainViewModel.saveCurrenciesListInDatabase(currencyList)
+
                     }
-                    ///
-                    binding.spinner.adapter = spinnerArrayAdapter
-                    completeCurrencyList = currencyList;
-                    renderCurrencyList(completeCurrencyList)
-
                 }
                 Status.LOADING -> {
                     binding.progressBar.visibility = View.VISIBLE
@@ -138,6 +140,41 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
                 }
+                else -> {}
+            }
+        })
+
+        mainViewModel.currencyList.observe(this, Observer {
+            Log.e("currencyList.observe", "inside")
+            when (it.status) {
+                Status.SUCCESS -> {
+                    CoroutineScope(Dispatchers.Main).launch() {
+                        binding.progressBar.visibility = View.GONE
+                        binding.currencyRecyclerView.visibility = View.VISIBLE
+
+                        var currencyList = mutableListOf<Currency>()
+                        currencyNamesList.clear()
+                        currencyList = it.data as MutableList<Currency>
+
+                       for(item in currencyList){
+                           currencyNamesList.add(item.name.toString())
+                           println("name = $item.name.toString()")
+                       }
+
+                        binding.spinner.adapter = spinnerArrayAdapter
+                        completeCurrencyList = currencyList;
+                        renderCurrencyList(completeCurrencyList)
+                    }
+                }
+                Status.LOADING -> {
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.currencyRecyclerView.visibility = View.GONE
+                }
+                Status.ERROR -> {
+                    binding.progressBar.visibility = View.GONE
+                    Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                }
+                else -> {}
             }
         })
     }

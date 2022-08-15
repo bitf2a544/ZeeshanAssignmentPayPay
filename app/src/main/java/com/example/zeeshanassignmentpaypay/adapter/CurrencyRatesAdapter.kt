@@ -1,4 +1,4 @@
-package com.example.zeeshanassignmentpaypay
+package com.example.zeeshanassignmentpaypay.adapter
 
 import android.util.Log
 import android.view.LayoutInflater
