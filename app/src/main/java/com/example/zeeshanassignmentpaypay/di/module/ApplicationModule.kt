@@ -14,13 +14,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
 
-/*
-ApplicationComponent is Deprecated in Dagger Version 2.30
-ApplicationComponent removed in Dagger Version 2.31
-Alternatively SingletonComponent should be used instead of ApplicationComponent
-*/
-
-
 @Module
 @InstallIn(SingletonComponent::class)
 class ApplicationModule {

@@ -19,48 +19,93 @@ class MainViewModel @Inject constructor(
     private val networkHelper: NetworkHelper
 ) : ViewModel() {
 
-    private val mutableLiveDataCurrecnysList = MutableLiveData<Resource<List<Currency>>>()
-    private val mutableLiveDataExchangeRates = MutableLiveData<Resource<ExchangeRates>>()
+ /*   private val mutableLiveDataCurrecnyList = MutableLiveData<Resource<List<Currency>>>()
+    val currencyList: LiveData<Resource<List<Currency>>> get() = mutableLiveDataCurrecnyList
+*/
 
+    private val mutableLiveDataExchangeRate = MutableLiveData<Resource<ExchangeRates>>()
+    val exchangeRates: LiveData<Resource<ExchangeRates>> get() = mutableLiveDataExchangeRate
 
-    val exchangeRate: LiveData<Resource<ExchangeRates>> get() = mutableLiveDataExchangeRates
-
-    val currencyList2: LiveData<Resource<List<Currency>>> get() = mutableLiveDataCurrecnysList
-
-    var currencyList = ArrayList<Currency>()
 
     init {
         fetchLatestExchangesRates()
     }
 
     private fun fetchLatestExchangesRates() {
+
         viewModelScope.launch {
-            mutableLiveDataExchangeRates.postValue(Resource.loading(null))
-            if (networkHelper.isNetworkConnected()) {
-                mainRepository.getLatestExchangeRatesFromNetwork(BuildConfig.API_KEY).let {
-                    if (it.isSuccessful) {
-                        var exchangeRates = it.body();
-                        var obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
-                        for ((key, value) in obj.entrySet()) {
-                            currencyList.add(Currency(key, value.asDouble))
-                            println("Key = $key Value = $value")
-                        }
-                        mutableLiveDataCurrecnysList.postValue(Resource.success(currencyList))
-                        //   mutableLiveDataExchangeRates.postValue(Resource.success(exchangeRates))
-                    } else {
-                        mutableLiveDataExchangeRates.postValue(
-                            Resource.error(
-                                it.errorBody().toString(), null
+            try {
+                mutableLiveDataExchangeRate.postValue(Resource.loading(null))
+                if (networkHelper.isNetworkConnected()) {
+                    mainRepository.getLatestExchangeRatesFromNetwork(BuildConfig.API_KEY).let {
+                        if (it.isSuccessful) {
+
+                          /*  var currencyList = ArrayList<Currency>()
+                            var currencyNamesList = ArrayList<String>()
+                            var exchangeRates = it.body();
+                            var obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
+                            for ((key, value) in obj.entrySet()) {
+                                currencyList.add(Currency(key, value.asDouble))
+                                currencyNamesList.add(key)
+                                println("Key = $key Value = $value")
+                            }*/
+                            mutableLiveDataExchangeRate.postValue(Resource.success(it.body()))
+
+                        } else {
+                            mutableLiveDataExchangeRate.postValue(
+                                Resource.error(
+                                    it.errorBody().toString(), null
+                                )
                             )
-                        )
+                        }
                     }
-                }
-            } else mutableLiveDataExchangeRates.postValue(
-                Resource.error(
-                    "No internet connection",
-                    null
+                } else mutableLiveDataExchangeRate.postValue(
+                    Resource.error(
+                        "No internet connection",
+                        null
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
+
+
+     /*   viewModelScope.launch {
+            try {
+                mutableLiveDataCurrecnyList.postValue(Resource.loading(null))
+                if (networkHelper.isNetworkConnected()) {
+                    mainRepository.getLatestExchangeRatesFromNetwork(BuildConfig.API_KEY).let {
+                        if (it.isSuccessful) {
+
+                                var currencyList = ArrayList<Currency>()
+                                var currencyNamesList = ArrayList<String>()
+                                var exchangeRates = it.body();
+                                var obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
+                                for ((key, value) in obj.entrySet()) {
+                                    currencyList.add(Currency(key, value.asDouble))
+                                    currencyNamesList.add(key)
+                                    println("Key = $key Value = $value")
+                                }
+                                mutableLiveDataCurrecnyList.postValue(Resource.success(currencyList))
+
+                        } else {
+                            mutableLiveDataCurrecnyList.postValue(
+                                Resource.error(
+                                    it.errorBody().toString(), null
+                                )
+                            )
+                        }
+                    }
+                } else mutableLiveDataCurrecnyList.postValue(
+                    Resource.error(
+                        "No internet connection",
+                        null
+                    )
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }*/
     }
 }
