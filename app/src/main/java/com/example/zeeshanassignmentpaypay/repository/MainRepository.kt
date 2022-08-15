@@ -1,8 +1,8 @@
-package com.example.zeeshanassignmentpaypay.data.repository
+package com.example.zeeshanassignmentpaypay.repository
 
-import com.example.zeeshanassignmentpaypay.data.api.ApiHelper
+import com.example.zeeshanassignmentpaypay.data.remote.api.ApiHelper
 import com.example.zeeshanassignmentpaypay.data.model.Currency
-import com.example.zeeshanassignmentpaypay.local.CurrencyDao
+import com.example.zeeshanassignmentpaypay.data.local.dao.CurrencyDao
 import javax.inject.Inject
 
 class MainRepository @Inject constructor(

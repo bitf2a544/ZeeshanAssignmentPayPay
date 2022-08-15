@@ -1,4 +1,4 @@
-package com.example.zeeshanassignmentpaypay.data.api
+package com.example.zeeshanassignmentpaypay.data.remote.api
 
 import com.example.zeeshanassignmentpaypay.data.model.ExchangeRates
 import retrofit2.Response

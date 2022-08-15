@@ -1,11 +1,10 @@
 package com.example.zeeshanassignmentpaypay.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.*
 import com.example.zeeshanassignmentpaypay.BuildConfig
 import com.example.zeeshanassignmentpaypay.data.model.Currency
 import com.example.zeeshanassignmentpaypay.data.model.ExchangeRates
-import com.example.zeeshanassignmentpaypay.data.repository.MainRepository
+import com.example.zeeshanassignmentpaypay.repository.MainRepository
 import com.example.zeeshanassignmentpaypay.utils.NetworkHelper
 import com.example.zeeshanassignmentpaypay.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -36,12 +35,11 @@ class MainViewModel @Inject constructor(
         mutableLiveDataExchangeRate.postValue(Resource.loading(null))
 
         CoroutineScope(Dispatchers.IO).launch {
-            var currencyList = getCurrenciesListFromDatabase();
+            val currencyList = getCurrenciesListFromDatabase()
 
-            if (currencyList == null || currencyList.isEmpty()) {
+            if (currencyList.isEmpty()) {
                 viewModelScope.launch {
                     try {
-                        //mutableLiveDataExchangeRate.postValue(Resource.loading(null))
                         if (networkHelper.isNetworkConnected()) {
                             mainRepository.getLatestExchangeRatesFromNetwork(BuildConfig.API_KEY)
                                 .let {
@@ -68,7 +66,6 @@ class MainViewModel @Inject constructor(
             } else {
                 viewModelScope.launch {
                     try {
-                        mutableLiveDataCurrencyList.postValue(Resource.loading(null))
                         mutableLiveDataCurrencyList.postValue(Resource.success(currencyList))
 
                     } catch (e: Exception) {
@@ -82,7 +79,6 @@ class MainViewModel @Inject constructor(
 
     fun saveCurrenciesListInDatabase(list: MutableList<Currency>) {
         CoroutineScope(Dispatchers.IO).launch() {
-            Log.e("saveCurrenciesListInDatabase", "inside_" + list.size)
             mainRepository.insertCurrencyListInDatabase(list)
         }
     }

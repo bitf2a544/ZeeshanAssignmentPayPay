@@ -3,11 +3,11 @@ package com.example.zeeshanassignmentpaypay.di.module
 import android.content.Context
 import androidx.room.Room
 import com.example.zeeshanassignmentpaypay.BuildConfig
-import com.example.zeeshanassignmentpaypay.data.api.ApiHelper
-import com.example.zeeshanassignmentpaypay.data.api.ApiHelperImpl
-import com.example.zeeshanassignmentpaypay.data.api.ApiService
-import com.example.zeeshanassignmentpaypay.local.CurrencyDao
-import com.example.zeeshanassignmentpaypay.local.AppDatabase
+import com.example.zeeshanassignmentpaypay.data.remote.api.ApiHelper
+import com.example.zeeshanassignmentpaypay.data.remote.api.ApiHelperImpl
+import com.example.zeeshanassignmentpaypay.data.remote.api.ApiService
+import com.example.zeeshanassignmentpaypay.data.local.dao.CurrencyDao
+import com.example.zeeshanassignmentpaypay.data.local.db.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

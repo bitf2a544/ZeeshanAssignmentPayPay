@@ -1,6 +1,5 @@
 package com.example.zeeshanassignmentpaypay.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,7 @@ class CurrencyRatesAdapter(private var currencyList: MutableList<Currency>) :
 
     inner class DataViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(currency: Currency) {
-            //Log.e("DataViewHolder_onBind", currency.name + " _zzz")
+
             binding.currencyNameTextView.text = currency.name
             binding.currencyPriceTextView.text = currency.price.toString()
 
@@ -37,26 +36,20 @@ class CurrencyRatesAdapter(private var currencyList: MutableList<Currency>) :
         holder.bind(currencyList[position])
 
     fun updateData(list: MutableList<Currency>) {
-        Log.e("updateData", "complete list changed")
-
         temporaryCurrencyList = list.map(Currency::clone) as MutableList<Currency>;
         currencyList = mutableListOf()
         currencyList = list.map(Currency::clone) as MutableList<Currency>;
     }
 
-    fun updateCurrenyRates(
+    fun updateCurrencyRates(
         queryValue: Double,
-        selectedCuurencyName: String,
+        selectedCurrencyName: String,
         currencyList1: MutableList<Currency>
     ) {
         currencyList = currencyList1.map(Currency::clone).toList() as MutableList<Currency>;
-        Log.e(
-            "updateCurrenyRates",
-            "selectedQuery:" + queryValue + " currNamwe:" + selectedCuurencyName
-        )
         for (i in currencyList.indices) {
-            var currencyItem = currencyList[i]
-            if (!currencyItem.name!!.contains(selectedCuurencyName)) {
+            val currencyItem = currencyList[i]
+            if (!currencyItem.name!!.contains(selectedCurrencyName)) {
                 currencyItem.price = (currencyItem.price!! * queryValue)
                 notifyItemChanged(i)
             }

@@ -1,19 +1,19 @@
 package com.example.zeeshanassignmentpaypay.ui
 
 import android.R
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.zeeshanassignmentpaypay.adapter.CurrencyRatesAdapter
 import com.example.zeeshanassignmentpaypay.data.model.Currency
-import com.example.zeeshanassignmentpaypay.databinding.ActivityMain2Binding
+import com.example.zeeshanassignmentpaypay.databinding.ActivityMainBinding
 import com.example.zeeshanassignmentpaypay.utils.Status
 import com.example.zeeshanassignmentpaypay.viewmodel.MainViewModel
 import com.google.gson.Gson
@@ -23,21 +23,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
+class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private val mainViewModel: MainViewModel by viewModels()
     private lateinit var adapter: CurrencyRatesAdapter
-    private lateinit var binding: ActivityMain2Binding
+    private lateinit var binding: ActivityMainBinding
     var completeCurrencyList = mutableListOf<Currency>()
     var currencyNamesList = mutableListOf<String>()
-    var currencyPriceList = mutableListOf<Double>()
-    var selectedCurrency = Currency("",0.0,0)
+    var selectedCurrency = Currency("", 0.0, 0)
 
-    lateinit var spinnerArrayAdapter: ArrayAdapter<String>
+    private lateinit var spinnerArrayAdapter: ArrayAdapter<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMain2Binding.inflate(layoutInflater)
+        binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setupUI()
@@ -57,15 +56,14 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
-                Log.e("onQueryTextSubmit", "inside")
-                if (query != null && !query.isEmpty() && selectedCurrency.name != null) {
-                    adapter.updateCurrenyRates(
+                if (query != null && query.isNotEmpty() && selectedCurrency.name != null) {
+                    adapter.updateCurrencyRates(
                         query.toDouble(),
                         selectedCurrency.name.toString(),
                         completeCurrencyList
                     )
                 } else {
-                    adapter.updateCurrenyRates(
+                    adapter.updateCurrencyRates(
                         1.0,
                         selectedCurrency.name.toString(),
                         completeCurrencyList
@@ -75,15 +73,14 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-                Log.e("onQueryTextChange", "inside")
-                if (newText != null && !newText.isEmpty() && selectedCurrency.name != null) {
-                    adapter.updateCurrenyRates(
+                if (newText != null && newText.isNotEmpty() && selectedCurrency.name != null) {
+                    adapter.updateCurrencyRates(
                         newText.toDouble(),
                         selectedCurrency.name.toString(),
                         completeCurrencyList
                     )
                 } else {
-                    adapter.updateCurrenyRates(
+                    adapter.updateCurrencyRates(
                         1.0,
                         selectedCurrency.name.toString(),
                         completeCurrencyList
@@ -107,18 +104,17 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private fun setupObserver() {
 
-        mainViewModel.exchangeRates.observe(this, Observer {
-            Log.e("currencyList_status", it.status.toString())
+        mainViewModel.exchangeRates.observe(this) {
             when (it.status) {
                 Status.SUCCESS -> {
                     CoroutineScope(Dispatchers.Main).launch() {
                         binding.progressBar.visibility = View.GONE
                         binding.currencyRecyclerView.visibility = View.VISIBLE
 
-                        var currencyList = mutableListOf<Currency>()
+                        val currencyList = mutableListOf<Currency>()
                         currencyNamesList.clear()
-                        var exchangeRates = it.data
-                        var obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
+                        val exchangeRates = it.data
+                        val obj = Gson().toJsonTree(exchangeRates?.rates).getAsJsonObject()
                         for ((key, value) in obj.entrySet()) {
                             currencyList.add(Currency(key, value.asDouble))
                             currencyNamesList.add(key)
@@ -142,9 +138,9 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 }
                 else -> {}
             }
-        })
+        }
 
-        mainViewModel.currencyList.observe(this, Observer {
+        mainViewModel.currencyList.observe(this) {
             Log.e("currencyList.observe", "inside")
             when (it.status) {
                 Status.SUCCESS -> {
@@ -156,10 +152,10 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                         currencyNamesList.clear()
                         currencyList = it.data as MutableList<Currency>
 
-                       for(item in currencyList){
-                           currencyNamesList.add(item.name.toString())
-                           println("name = $item.name.toString()")
-                       }
+                        for (item in currencyList) {
+                            currencyNamesList.add(item.name.toString())
+                            println("name = $item.name.toString()")
+                        }
 
                         binding.spinner.adapter = spinnerArrayAdapter
                         completeCurrencyList = currencyList;
@@ -176,9 +172,10 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 }
                 else -> {}
             }
-        })
+        }
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     private fun renderCurrencyList(currencyList: MutableList<Currency>) {
         Log.e("currencyList", "inside " + currencyList.size)
         adapter.updateData(currencyList)
@@ -187,16 +184,10 @@ class MainActivity2 : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     override fun onItemSelected(arg0: AdapterView<*>?, arg1: View?, position: Int, id: Long) {
-        Toast.makeText(
-            applicationContext,
-            completeCurrencyList.get(position).name.toString(),
-            Toast.LENGTH_LONG
-        ).show()
-
         selectedCurrency = completeCurrencyList.get(position);
     }
 
     override fun onNothingSelected(arg0: AdapterView<*>?) {
-        // TODO Auto-generated method stub
+
     }
 }
