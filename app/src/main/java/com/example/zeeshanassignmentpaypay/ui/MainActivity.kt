@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private val mainViewModel: MainViewModel by viewModels()
-    private lateinit var adapter: CurrencyRatesAdapter
+    private lateinit var currencyRatesAdapter: CurrencyRatesAdapter
     private lateinit var binding: ActivityMainBinding
     var completeCurrencyList = mutableListOf<Currency>()
     var currencyNamesList = mutableListOf<String>()
@@ -44,26 +44,35 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun setupUI() {
+        setUpCurrencyRecyclerView()
+        setUpSearchViewChangeListener()
+        setUpSpinner()
+    }
+
+    private fun setUpCurrencyRecyclerView() {
         binding.currencyRecyclerView.layoutManager = GridLayoutManager(this, 4)
-        adapter = CurrencyRatesAdapter(arrayListOf())
+        currencyRatesAdapter = CurrencyRatesAdapter(arrayListOf())
         binding.currencyRecyclerView.addItemDecoration(
             DividerItemDecoration(
                 binding.currencyRecyclerView.context,
                 (binding.currencyRecyclerView.layoutManager as LinearLayoutManager).orientation
             )
         )
-        binding.currencyRecyclerView.adapter = adapter
+        binding.currencyRecyclerView.adapter = currencyRatesAdapter
 
+    }
+
+    private fun setUpSearchViewChangeListener() {
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (query != null && query.isNotEmpty() && selectedCurrency.name != null) {
-                    adapter.updateCurrencyRates(
+                    currencyRatesAdapter.updateCurrencyRates(
                         query.toDouble(),
                         selectedCurrency.name.toString(),
                         completeCurrencyList
                     )
                 } else {
-                    adapter.updateCurrencyRates(
+                    currencyRatesAdapter.updateCurrencyRates(
                         1.0,
                         selectedCurrency.name.toString(),
                         completeCurrencyList
@@ -74,13 +83,13 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (newText != null && newText.isNotEmpty() && selectedCurrency.name != null) {
-                    adapter.updateCurrencyRates(
+                    currencyRatesAdapter.updateCurrencyRates(
                         newText.toDouble(),
                         selectedCurrency.name.toString(),
                         completeCurrencyList
                     )
                 } else {
-                    adapter.updateCurrencyRates(
+                    currencyRatesAdapter.updateCurrencyRates(
                         1.0,
                         selectedCurrency.name.toString(),
                         completeCurrencyList
@@ -89,21 +98,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 return false
             }
         })
+    }
 
+    private fun setUpSpinner() {
         binding.spinner.onItemSelectedListener = this
-
         //Creating the ArrayAdapter instance having the country list
         spinnerArrayAdapter = ArrayAdapter<String>(
             this, R.layout.simple_spinner_item,
             currencyNamesList
         )
         spinnerArrayAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
-
         binding.spinner.adapter = spinnerArrayAdapter
     }
 
     private fun setupObserver() {
-
         mainViewModel.exchangeRates.observe(this) {
             when (it.status) {
                 Status.SUCCESS -> {
@@ -136,7 +144,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     binding.progressBar.visibility = View.GONE
                     Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
                 }
-                else -> {}
             }
         }
 
@@ -177,9 +184,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun renderCurrencyList(currencyList: MutableList<Currency>) {
-        Log.e("currencyList", "inside " + currencyList.size)
-        adapter.updateData(currencyList)
-        adapter.notifyDataSetChanged()
+        currencyRatesAdapter.updateData(currencyList)
+        currencyRatesAdapter.notifyDataSetChanged()
         spinnerArrayAdapter.notifyDataSetChanged()
     }
 

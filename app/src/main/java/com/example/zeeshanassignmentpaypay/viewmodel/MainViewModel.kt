@@ -8,6 +8,7 @@ import com.example.zeeshanassignmentpaypay.repository.MainRepository
 import com.example.zeeshanassignmentpaypay.utils.NetworkHelper
 import com.example.zeeshanassignmentpaypay.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 
@@ -21,18 +22,18 @@ class MainViewModel @Inject constructor(
     private val networkHelper: NetworkHelper
 ) : ViewModel() {
 
-    private val mutableLiveDataExchangeRate = MutableLiveData<Resource<ExchangeRates>>()
-    val exchangeRates: LiveData<Resource<ExchangeRates>> get() = mutableLiveDataExchangeRate
+    private val _exchangeRates = MutableLiveData<Resource<ExchangeRates>>()
+    val exchangeRates: LiveData<Resource<ExchangeRates>> get() = _exchangeRates
 
-    private val mutableLiveDataCurrencyList = MutableLiveData<Resource<List<Currency>>>()
-    val currencyList: LiveData<Resource<List<Currency>>> get() = mutableLiveDataCurrencyList
+    private val _currencyList = MutableLiveData<Resource<List<Currency>>>()
+    val currencyList: LiveData<Resource<List<Currency>>> get() = _currencyList
 
     init {
         fetchLatestExchangesRates()
     }
 
     private fun fetchLatestExchangesRates() {
-        mutableLiveDataExchangeRate.postValue(Resource.loading(null))
+        _exchangeRates.postValue(Resource.loading(null))
 
         CoroutineScope(Dispatchers.IO).launch {
             val currencyList = getCurrenciesListFromDatabase()
@@ -44,16 +45,16 @@ class MainViewModel @Inject constructor(
                             mainRepository.getLatestExchangeRatesFromNetwork(BuildConfig.API_KEY)
                                 .let {
                                     if (it.isSuccessful) {
-                                        mutableLiveDataExchangeRate.postValue(Resource.success(it.body()))
+                                        _exchangeRates.postValue(Resource.success(it.body()))
                                     } else {
-                                        mutableLiveDataExchangeRate.postValue(
+                                        _exchangeRates.postValue(
                                             Resource.error(
                                                 it.errorBody().toString(), null
                                             )
                                         )
                                     }
                                 }
-                        } else mutableLiveDataExchangeRate.postValue(
+                        } else _exchangeRates.postValue(
                             Resource.error(
                                 "No internet connection",
                                 null
@@ -66,7 +67,7 @@ class MainViewModel @Inject constructor(
             } else {
                 viewModelScope.launch {
                     try {
-                        mutableLiveDataCurrencyList.postValue(Resource.success(currencyList))
+                        _currencyList.postValue(Resource.success(currencyList))
 
                     } catch (e: Exception) {
                         e.printStackTrace()
