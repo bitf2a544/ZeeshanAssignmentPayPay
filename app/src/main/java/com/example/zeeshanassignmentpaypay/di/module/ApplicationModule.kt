@@ -8,6 +8,7 @@ import com.example.zeeshanassignmentpaypay.data.remote.api.ApiHelperImpl
 import com.example.zeeshanassignmentpaypay.data.remote.api.ApiService
 import com.example.zeeshanassignmentpaypay.data.local.dao.CurrencyDao
 import com.example.zeeshanassignmentpaypay.data.local.db.AppDatabase
+import com.example.zeeshanassignmentpaypay.utils.Constants
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -69,7 +70,7 @@ class ApplicationModule {
         return Room.databaseBuilder(
             appContext,
             AppDatabase::class.java,
-            "CurrencyExchangeDatabase"
+            Constants.DATA_BASE_NAME
         ).build()
     }
 }

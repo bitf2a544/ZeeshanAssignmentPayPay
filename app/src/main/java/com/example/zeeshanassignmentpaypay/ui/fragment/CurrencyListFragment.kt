@@ -1,19 +1,24 @@
-package com.example.zeeshanassignmentpaypay.ui
+package com.example.zeeshanassignmentpaypay.ui.fragment
 
-import android.R
+
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.*
-import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.SearchView
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.zeeshanassignmentpaypay.adapter.CurrencyRatesAdapter
 import com.example.zeeshanassignmentpaypay.data.model.Currency
-import com.example.zeeshanassignmentpaypay.databinding.ActivityMainBinding
+import com.example.zeeshanassignmentpaypay.databinding.CurrenyListFragmentBinding
 import com.example.zeeshanassignmentpaypay.utils.Status
 import com.example.zeeshanassignmentpaypay.viewmodel.MainViewModel
 import com.google.gson.Gson
@@ -22,25 +27,27 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@AndroidEntryPoint
-class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
-    private val mainViewModel: MainViewModel by viewModels()
+@AndroidEntryPoint
+class CurrencyListFragment : Fragment(), AdapterView.OnItemSelectedListener {
+
+    private lateinit var binding: CurrenyListFragmentBinding
     private lateinit var currencyRatesAdapter: CurrencyRatesAdapter
-    private lateinit var binding: ActivityMainBinding
     var completeCurrencyList = mutableListOf<Currency>()
     var currencyNamesList = mutableListOf<String>()
     var selectedCurrency = Currency("", 0.0, 0)
 
+    private val mainViewModel by viewModels<MainViewModel>()
     private lateinit var spinnerArrayAdapter: ArrayAdapter<String>
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = CurrenyListFragmentBinding.inflate(layoutInflater)
         setupUI()
         setupObserver()
+        return binding.root
     }
 
     private fun setupUI() {
@@ -50,7 +57,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun setUpCurrencyRecyclerView() {
-        binding.currencyRecyclerView.layoutManager = GridLayoutManager(this, 4)
+        binding.currencyRecyclerView.layoutManager = GridLayoutManager(activity, 4)
         currencyRatesAdapter = CurrencyRatesAdapter(arrayListOf())
         binding.currencyRecyclerView.addItemDecoration(
             DividerItemDecoration(
@@ -104,15 +111,16 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         binding.spinner.onItemSelectedListener = this
         //Creating the ArrayAdapter instance having the country list
         spinnerArrayAdapter = ArrayAdapter<String>(
-            this, R.layout.simple_spinner_item,
+            requireActivity().applicationContext, android.R.layout.simple_spinner_item,
             currencyNamesList
         )
-        spinnerArrayAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item)
+
+        spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinner.adapter = spinnerArrayAdapter
     }
 
     private fun setupObserver() {
-        mainViewModel.exchangeRates.observe(this) {
+        mainViewModel.exchangeRates.observe(viewLifecycleOwner) {
             when (it.status) {
                 Status.SUCCESS -> {
                     CoroutineScope(Dispatchers.Main).launch() {
@@ -142,12 +150,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 }
                 Status.ERROR -> {
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
                 }
             }
         }
 
-        mainViewModel.currencyList.observe(this) {
+        mainViewModel.currencyList.observe(viewLifecycleOwner) {
             Log.e("currencyList.observe", "inside")
             when (it.status) {
                 Status.SUCCESS -> {
@@ -175,7 +183,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 }
                 Status.ERROR -> {
                     binding.progressBar.visibility = View.GONE
-                    Toast.makeText(this, it.message, Toast.LENGTH_LONG).show()
+                    Toast.makeText(activity, it.message, Toast.LENGTH_LONG).show()
                 }
                 else -> {}
             }
