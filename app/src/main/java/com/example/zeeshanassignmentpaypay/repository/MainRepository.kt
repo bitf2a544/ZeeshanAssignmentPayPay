@@ -10,7 +10,7 @@ class MainRepository @Inject constructor(
     private val currencyDao: CurrencyDao
 ) {
 
-    suspend fun getLatestExchangeRatesFromNetwork(apiKey: String?) =
+    open suspend fun getLatestExchangeRatesFromNetwork(apiKey: String?) =
         apiHelper.getLatestExchangeRatesFromAPI(apiKey)
 
     suspend fun getCurrencyListFromDatabase() = currencyDao.getAllCurrencyList()

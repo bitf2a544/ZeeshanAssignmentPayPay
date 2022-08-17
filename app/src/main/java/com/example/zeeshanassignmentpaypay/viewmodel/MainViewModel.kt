@@ -89,4 +89,10 @@ class MainViewModel @Inject constructor(
             return@runBlocking mainRepository.getCurrencyListFromDatabase() as MutableList<Currency>
         }
     }
+
+
+    fun getCurrencyListromViewModel(): LiveData<Resource<List<Currency>>> {
+        return _currencyList
+    }
+
 }
