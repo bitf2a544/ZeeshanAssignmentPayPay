@@ -17,9 +17,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ZeeshanAssignmentPayPay"
         tools:targetApi="31">
-        <activity
-            android:name=".ui.activity.MainActivity"
-            android:exported="false" />
+
         <activity
             android:name=".ui.activity.MainActivity"
             android:exported="true">
